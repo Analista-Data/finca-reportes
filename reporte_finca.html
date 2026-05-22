@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Reporte de Campo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --verde: #1D9E75;
@@ -28,396 +28,95 @@
   --radio-sm: 8px;
   --blanco: #ffffff;
 }
-
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--gris);
-  color: var(--texto);
-  min-height: 100vh;
-  max-width: 480px;
-  margin: 0 auto;
-}
-
+body { font-family: 'DM Sans', sans-serif; background: var(--gris); color: var(--texto); min-height: 100vh; max-width: 480px; margin: 0 auto; }
 .pantalla { display: none; min-height: 100vh; }
 .pantalla.activo { display: block; }
 
-/* CABECERA */
-.cabecera {
-  background: var(--verde);
-  padding: 3rem 1.25rem 1.25rem;
-  position: relative;
-  overflow: hidden;
-}
+.cabecera { background: var(--verde); padding: 3rem 1.25rem 1.25rem; position: relative; overflow: hidden; }
+.cabecera::before { content:''; position:absolute; top:-40px; right:-40px; width:180px; height:180px; border-radius:50%; background:rgba(255,255,255,0.06); }
+.cabecera::after { content:''; position:absolute; bottom:-60px; left:-20px; width:140px; height:140px; border-radius:50%; background:rgba(255,255,255,0.04); }
+.cab-etiqueta { font-size:11px; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,0.65); margin-bottom:4px; }
+.cab-titulo { font-size:26px; font-weight:600; color:white; line-height:1.2; }
+.cab-sub { font-size:13px; color:rgba(255,255,255,0.7); margin-top:4px; }
+.cab-fila { display:flex; justify-content:space-between; align-items:flex-start; }
 
-.cabecera::before {
-  content: '';
-  position: absolute;
-  top: -40px; right: -40px;
-  width: 180px; height: 180px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.06);
-}
-
-.cabecera::after {
-  content: '';
-  position: absolute;
-  bottom: -60px; left: -20px;
-  width: 140px; height: 140px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.04);
-}
-
-.cab-etiqueta {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.65);
-  margin-bottom: 4px;
-}
-
-.cab-titulo {
-  font-size: 26px;
-  font-weight: 600;
-  color: white;
-  line-height: 1.2;
-}
-
-.cab-sub {
-  font-size: 13px;
-  color: rgba(255,255,255,0.7);
-  margin-top: 4px;
-}
-
-.cab-fila {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-/* BADGE SEÑAL */
-.badge-señal {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-  position: relative;
-  z-index: 1;
-}
-.badge-señal.online { background: rgba(255,255,255,0.2); color: white; }
-.badge-señal.offline { background: rgba(186,117,23,0.3); color: #FAEEDA; }
-.punto { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
-.online .punto { background: #9FE1CB; }
-.offline .punto { background: #FAC775; animation: pulso 1s infinite; }
-
+.badge-señal { display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:20px; font-size:12px; font-weight:500; position:relative; z-index:1; }
+.badge-señal.online { background:rgba(255,255,255,0.2); color:white; }
+.badge-señal.offline { background:rgba(186,117,23,0.3); color:#FAEEDA; }
+.punto { width:7px; height:7px; border-radius:50%; display:inline-block; }
+.online .punto { background:#9FE1CB; }
+.offline .punto { background:#FAC775; animation:pulso 1s infinite; }
 @keyframes pulso { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-/* CUERPO */
 .cuerpo { padding: 1.25rem; }
+.card { background:var(--blanco); border-radius:var(--radio); border:0.5px solid var(--borde); padding:1.1rem 1.25rem; margin-bottom:1rem; }
 
-/* CARDS */
-.card {
-  background: var(--blanco);
-  border-radius: var(--radio);
-  border: 0.5px solid var(--borde);
-  padding: 1.1rem 1.25rem;
-  margin-bottom: 1rem;
-}
+select, input[type=date], input[type=text] { width:100%; padding:12px 14px; border:0.5px solid var(--borde-med); border-radius:var(--radio-sm); font-size:15px; font-family:'DM Sans',sans-serif; color:var(--texto); background:var(--gris); appearance:none; -webkit-appearance:none; }
+select:focus, input:focus { outline:2px solid var(--verde); outline-offset:-1px; }
+.label-campo { font-size:13px; font-weight:500; color:var(--texto-sec); margin-bottom:6px; display:block; }
+.campo-grupo { margin-bottom:14px; }
+.campo-grupo:last-child { margin-bottom:0; }
 
-/* SELECTS / INPUTS */
-select, input[type=date], input[type=text] {
-  width: 100%;
-  padding: 12px 14px;
-  border: 0.5px solid var(--borde-med);
-  border-radius: var(--radio-sm);
-  font-size: 15px;
-  font-family: 'DM Sans', sans-serif;
-  color: var(--texto);
-  background: var(--gris);
-  appearance: none;
-  -webkit-appearance: none;
-}
+.btn-primario { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:15px; background:var(--verde); color:white; border:none; border-radius:var(--radio); font-size:15px; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer; transition:opacity 0.15s, transform 0.1s; margin-bottom:10px; }
+.btn-primario:active { transform:scale(0.98); opacity:0.9; }
+.btn-primario:disabled { opacity:0.5; cursor:not-allowed; }
+.btn-secundario { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:13px; background:transparent; color:var(--texto-sec); border:0.5px solid var(--borde-med); border-radius:var(--radio); font-size:14px; font-family:'DM Sans',sans-serif; cursor:pointer; margin-bottom:10px; }
+.btn-historial { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:var(--blanco); border-radius:var(--radio); border:0.5px solid var(--borde); font-size:14px; cursor:pointer; color:var(--texto); width:100%; font-family:'DM Sans',sans-serif; }
+.chip { font-size:11px; font-weight:600; padding:3px 9px; border-radius:20px; background:var(--amber-light); color:var(--amber); }
 
-select:focus, input:focus { outline: 2px solid var(--verde); outline-offset: -1px; }
+.progreso-wrap { padding:1rem 1.25rem 0; background:var(--verde-mid); }
+.progreso-info { display:flex; justify-content:space-between; font-size:12px; color:rgba(255,255,255,0.75); margin-bottom:8px; }
+.progreso-barra { height:3px; background:rgba(255,255,255,0.2); border-radius:2px; overflow:hidden; }
+.progreso-fill { height:100%; background:white; border-radius:2px; transition:width 0.4s cubic-bezier(0.4,0,0.2,1); }
 
-.label-campo {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--texto-sec);
-  margin-bottom: 6px;
-  display: block;
-}
+.campo-card { background:var(--blanco); border-radius:var(--radio); border:0.5px solid var(--borde); padding:1.1rem 1.25rem; margin-bottom:1rem; transition:border-color 0.2s; }
+.campo-card.completo { border-color:var(--verde); }
+.campo-num { font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--texto-sec); margin-bottom:3px; }
+.campo-nombre { font-size:16px; font-weight:600; color:var(--texto); margin-bottom:3px; }
+.campo-pista { font-size:13px; color:var(--texto-sec); margin-bottom:12px; line-height:1.4; }
 
-.campo-grupo { margin-bottom: 14px; }
-.campo-grupo:last-child { margin-bottom: 0; }
+textarea { width:100%; min-height:72px; border:0.5px solid var(--borde-med); border-radius:var(--radio-sm); padding:10px 12px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--texto); background:var(--gris); resize:vertical; line-height:1.5; }
+textarea:focus { outline:2px solid var(--verde); outline-offset:-1px; }
 
-/* BOTONES */
-.btn-primario {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 15px;
-  background: var(--verde);
-  color: white;
-  border: none;
-  border-radius: var(--radio);
-  font-size: 15px;
-  font-weight: 600;
-  font-family: 'DM Sans', sans-serif;
-  cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
-  margin-bottom: 10px;
-}
-.btn-primario:active { transform: scale(0.98); opacity: 0.9; }
-.btn-primario:disabled { opacity: 0.5; cursor: not-allowed; }
+.fila-voz { display:flex; align-items:center; gap:10px; margin-top:10px; }
+.btn-mic { display:flex; align-items:center; gap:7px; padding:9px 16px; border-radius:var(--radio-sm); font-size:13px; font-weight:500; font-family:'DM Sans',sans-serif; border:0.5px solid var(--borde-med); background:var(--gris); color:var(--texto); cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+.btn-mic:active { transform:scale(0.97); }
+.btn-mic.grabando { background:var(--rojo-light); border-color:var(--rojo); color:var(--rojo); }
+.btn-mic.grabando .mic-dot { background:var(--rojo); animation:pulso 0.8s infinite; }
+.mic-dot { width:8px; height:8px; border-radius:50%; background:var(--verde); }
+.voz-estado { font-size:12px; color:var(--texto-sec); flex:1; line-height:1.3; }
+.voz-estado.grabando { color:var(--rojo); }
+.voz-estado.ok { color:var(--verde); }
+.voz-estado.audio { color:var(--amber); }
 
-.btn-secundario {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 13px;
-  background: transparent;
-  color: var(--texto-sec);
-  border: 0.5px solid var(--borde-med);
-  border-radius: var(--radio);
-  font-size: 14px;
-  font-family: 'DM Sans', sans-serif;
-  cursor: pointer;
-  margin-bottom: 10px;
-}
+.audio-aviso { display:none; align-items:center; gap:8px; margin-top:8px; padding:8px 12px; background:var(--amber-light); border-radius:var(--radio-sm); font-size:12px; color:var(--amber); line-height:1.4; }
+.audio-aviso.visible { display:flex; }
 
-.btn-historial {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  background: var(--blanco);
-  border-radius: var(--radio);
-  border: 0.5px solid var(--borde);
-  font-size: 14px;
-  cursor: pointer;
-  color: var(--texto);
-  width: 100%;
-  font-family: 'DM Sans', sans-serif;
-}
+.cab-nav { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.btn-volver { background:none; border:none; color:rgba(255,255,255,0.85); font-size:13px; font-family:'DM Sans',sans-serif; cursor:pointer; display:flex; align-items:center; gap:5px; padding:4px 0; }
 
-.chip {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 9px;
-  border-radius: 20px;
-  background: var(--amber-light);
-  color: var(--amber);
-}
+.check-circulo { width:56px; height:56px; border-radius:50%; background:var(--verde-light); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; }
+.resumen-item { padding:10px 0; border-bottom:0.5px solid var(--borde); }
+.resumen-item:last-child { border-bottom:none; }
+.resumen-campo { font-size:12px; color:var(--texto-sec); margin-bottom:3px; }
+.resumen-valor { font-size:14px; color:var(--texto); line-height:1.4; }
+.resumen-audio { display:inline-flex; align-items:center; gap:5px; font-size:12px; padding:3px 9px; border-radius:20px; background:var(--amber-light); color:var(--amber); }
+.resumen-vacio { font-size:13px; color:#bbb; font-style:italic; }
 
-/* PROGRESO */
-.progreso-wrap {
-  padding: 1rem 1.25rem 0;
-  background: var(--verde-mid);
-}
-.progreso-info {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: rgba(255,255,255,0.75);
-  margin-bottom: 8px;
-}
-.progreso-barra {
-  height: 3px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.progreso-fill {
-  height: 100%;
-  background: white;
-  border-radius: 2px;
-  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
-}
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1a1a1a; color:white; padding:12px 20px; border-radius:24px; font-size:13px; font-weight:500; white-space:nowrap; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); z-index:9999; }
+.toast.visible { transform:translateX(-50%) translateY(0); }
+.toast.verde { background:var(--verde-dark); }
+.toast.rojo { background:var(--rojo); }
 
-/* CAMPO FORMULARIO */
-.campo-card {
-  background: var(--blanco);
-  border-radius: var(--radio);
-  border: 0.5px solid var(--borde);
-  padding: 1.1rem 1.25rem;
-  margin-bottom: 1rem;
-  transition: border-color 0.2s;
-}
-.campo-card.completo { border-color: var(--verde); }
-
-.campo-num {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--texto-sec);
-  margin-bottom: 3px;
-}
-.campo-nombre {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--texto);
-  margin-bottom: 3px;
-}
-.campo-pista {
-  font-size: 13px;
-  color: var(--texto-sec);
-  margin-bottom: 12px;
-  line-height: 1.4;
-}
-
-textarea {
-  width: 100%;
-  min-height: 72px;
-  border: 0.5px solid var(--borde-med);
-  border-radius: var(--radio-sm);
-  padding: 10px 12px;
-  font-size: 14px;
-  font-family: 'DM Sans', sans-serif;
-  color: var(--texto);
-  background: var(--gris);
-  resize: vertical;
-  line-height: 1.5;
-}
-textarea:focus { outline: 2px solid var(--verde); outline-offset: -1px; }
-
-/* BOTÓN GRABAR */
-.fila-voz { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-
-.btn-mic {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 16px;
-  border-radius: var(--radio-sm);
-  font-size: 13px;
-  font-weight: 500;
-  font-family: 'DM Sans', sans-serif;
-  border: 0.5px solid var(--borde-med);
-  background: var(--gris);
-  color: var(--texto);
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-.btn-mic:active { transform: scale(0.97); }
-.btn-mic.grabando {
-  background: var(--rojo-light);
-  border-color: var(--rojo);
-  color: var(--rojo);
-}
-.btn-mic.grabando .mic-dot { background: var(--rojo); animation: pulso 0.8s infinite; }
-.mic-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--verde); }
-
-.voz-estado {
-  font-size: 12px;
-  color: var(--texto-sec);
-  flex: 1;
-  line-height: 1.3;
-}
-.voz-estado.grabando { color: var(--rojo); }
-.voz-estado.ok { color: var(--verde); }
-.voz-estado.audio { color: var(--amber); }
-
-.audio-aviso {
-  display: none;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: var(--amber-light);
-  border-radius: var(--radio-sm);
-  font-size: 12px;
-  color: var(--amber);
-  line-height: 1.4;
-}
-.audio-aviso.visible { display: flex; }
-
-/* NAV CABECERA FORM */
-.cab-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.btn-volver {
-  background: none; border: none;
-  color: rgba(255,255,255,0.85);
-  font-size: 13px;
-  font-family: 'DM Sans', sans-serif;
-  cursor: pointer;
-  display: flex; align-items: center; gap: 5px;
-  padding: 4px 0;
-}
-
-/* RESUMEN */
-.check-circulo {
-  width: 56px; height: 56px;
-  border-radius: 50%;
-  background: var(--verde-light);
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 1rem;
-}
-
-.resumen-item {
-  padding: 10px 0;
-  border-bottom: 0.5px solid var(--borde);
-}
-.resumen-item:last-child { border-bottom: none; }
-.resumen-campo { font-size: 12px; color: var(--texto-sec); margin-bottom: 3px; }
-.resumen-valor { font-size: 14px; color: var(--texto); line-height: 1.4; }
-.resumen-audio {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 12px; padding: 3px 9px;
-  border-radius: 20px; background: var(--amber-light); color: var(--amber);
-}
-.resumen-vacio { font-size: 13px; color: #bbb; font-style: italic; }
-
-/* TOAST */
-.toast {
-  position: fixed;
-  bottom: 24px; left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  background: #1a1a1a;
-  color: white;
-  padding: 12px 20px;
-  border-radius: 24px;
-  font-size: 13px;
-  font-weight: 500;
-  white-space: nowrap;
-  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  z-index: 9999;
-}
-.toast.visible { transform: translateX(-50%) translateY(0); }
-.toast.verde { background: var(--verde-dark); }
-.toast.rojo { background: var(--rojo); }
-
-/* SPINNER */
-.spinner {
-  width: 18px; height: 18px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-svg.icono { width: 18px; height: 18px; fill: currentColor; }
+.spinner { width:18px; height:18px; border:2px solid rgba(0,0,0,0.1); border-top-color:var(--verde); border-radius:50%; animation:spin 0.7s linear infinite; display:inline-block; }
+@keyframes spin { to { transform:rotate(360deg); } }
+svg.icono { width:18px; height:18px; fill:currentColor; }
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════ INICIO ═══════════════════════════════════ -->
+<!-- INICIO -->
 <div id="p-inicio" class="pantalla activo">
   <div class="cabecera">
     <div class="cab-fila">
@@ -432,7 +131,6 @@ svg.icono { width: 18px; height: 18px; fill: currentColor; }
       </div>
     </div>
   </div>
-
   <div class="cuerpo">
     <div class="card">
       <div class="campo-grupo">
@@ -448,12 +146,10 @@ svg.icono { width: 18px; height: 18px; fill: currentColor; }
         <input type="date" id="inp-fecha">
       </div>
     </div>
-
     <button class="btn-primario" onclick="iniciarRecorrido()">
       <svg viewBox="0 0 24 24" class="icono"><path d="M8 5v14l11-7z"/></svg>
       Iniciar recorrido
     </button>
-
     <button class="btn-historial" onclick="verHistorial()">
       <span style="display:flex;align-items:center;gap:8px;">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="var(--texto-sec)"><path d="M13 3a9 9 0 1 0 9 9h-2a7 7 0 1 1-2.05-4.95L15 9h5V4l-1.75 1.75A8.96 8.96 0 0 0 13 3zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8H12z"/></svg>
@@ -464,9 +160,9 @@ svg.icono { width: 18px; height: 18px; fill: currentColor; }
   </div>
 </div>
 
-<!-- ═══════════════════════════════════ FORMULARIO ═══════════════════════════════════ -->
+<!-- FORMULARIO -->
 <div id="p-formulario" class="pantalla">
-  <div class="cabecera" style="padding-top:2.5rem; padding-bottom:0.75rem;">
+  <div class="cabecera" style="padding-top:2.5rem;padding-bottom:0.75rem;">
     <div class="cab-nav">
       <button class="btn-volver" onclick="confirmarVolver()">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
@@ -480,7 +176,6 @@ svg.icono { width: 18px; height: 18px; fill: currentColor; }
     <div id="cab-vaquero" class="cab-titulo" style="font-size:18px;"></div>
     <div id="cab-fecha" class="cab-sub"></div>
   </div>
-
   <div class="progreso-wrap">
     <div class="progreso-info">
       <span id="prog-texto">0 de 7 completados</span>
@@ -490,11 +185,10 @@ svg.icono { width: 18px; height: 18px; fill: currentColor; }
       <div class="progreso-fill" id="prog-fill" style="width:0%"></div>
     </div>
   </div>
-
   <div class="cuerpo" id="cont-campos"></div>
 </div>
 
-<!-- ═══════════════════════════════════ RESUMEN ═══════════════════════════════════ -->
+<!-- RESUMEN -->
 <div id="p-resumen" class="pantalla">
   <div class="cabecera">
     <div class="cab-etiqueta">Recorrido finalizado</div>
@@ -502,11 +196,11 @@ svg.icono { width: 18px; height: 18px; fill: currentColor; }
     <div id="res-subtitulo" class="cab-sub"></div>
   </div>
   <div class="cuerpo">
-    <div class="card" style="text-align:center; padding:1.5rem;">
+    <div class="card" style="text-align:center;padding:1.5rem;">
       <div class="check-circulo">
         <svg viewBox="0 0 24 24" width="28" height="28" fill="var(--verde)"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
       </div>
-      <div id="estado-envio" style="font-size:14px; color:var(--texto-sec); line-height:1.5;"></div>
+      <div id="estado-envio" style="font-size:14px;color:var(--texto-sec);line-height:1.5;"></div>
     </div>
     <div class="card" id="cont-resumen"></div>
     <button class="btn-primario" onclick="exportarCSV()">
@@ -517,7 +211,6 @@ svg.icono { width: 18px; height: 18px; fill: currentColor; }
   </div>
 </div>
 
-<!-- TOAST -->
 <div id="toast" class="toast"></div>
 
 <script>
@@ -525,39 +218,53 @@ const SUPABASE_URL = 'https://oyhotpwtqoeqmxoelxlm.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95aG90cHd0cW9lcW14b2VseGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NzE4NDcsImV4cCI6MjA5NTA0Nzg0N30.WwkBoTVbUd8yUGYP-ZCNCybuEZYVXeI4YVMAeMkJ180';
 
 const CAMPOS = [
-  { id:'sector',           nombre:'Sector recorrido',                  pista:'¿Qué área o potrero recorrió hoy?' },
-  { id:'reses',            nombre:'Conteo de reses',                   pista:'¿Cuántas reses vio y en qué condición general están?' },
-  { id:'agua_pasto',       nombre:'Estado del agua y pasto',           pista:'¿Cómo están los bebederos, ríos o potreros?' },
-  { id:'animales_enfermos',nombre:'Animales enfermos o con problemas', pista:'¿Vio algún animal herido, enfermo o con comportamiento extraño?' },
-  { id:'instalaciones',    nombre:'Estado de instalaciones',           pista:'Cercas, portones, corrales — ¿algo dañado?' },
-  { id:'hallazgos',        nombre:'Hallazgos especiales',              pista:'¿Encontró algo fuera de lo normal?' },
-  { id:'observaciones',    nombre:'Observaciones generales',           pista:'Cualquier otra cosa importante que reportar.' }
+  { id:'sector',            nombre:'Sector recorrido',                  pista:'¿Qué área o potrero recorrió hoy?' },
+  { id:'reses',             nombre:'Conteo de reses',                   pista:'¿Cuántas reses vio y en qué condición general están?' },
+  { id:'agua_pasto',        nombre:'Estado del agua y pasto',           pista:'¿Cómo están los bebederos, ríos o potreros?' },
+  { id:'animales_enfermos', nombre:'Animales enfermos o con problemas', pista:'¿Vio algún animal herido, enfermo o con comportamiento extraño?' },
+  { id:'instalaciones',     nombre:'Estado de instalaciones',           pista:'Cercas, portones, corrales — ¿algo dañado?' },
+  { id:'hallazgos',         nombre:'Hallazgos especiales',              pista:'¿Encontró algo fuera de lo normal?' },
+  { id:'observaciones',     nombre:'Observaciones generales',           pista:'Cualquier otra cosa importante que reportar.' }
 ];
 
-let est = { finca:'', vaquero:'', fecha:'', respuestas:{}, audios:{}, online: navigator.onLine };
+let est = { finca:'', vaquero:'', fecha:'', respuestas:{}, audios:{} };
 let mediaRecs = {}, audioChunks = {}, grabando = {}, speechRecs = {};
 
-// ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('inp-fecha').value = new Date().toISOString().split('T')[0];
-  actualizarSeñal();
+  verificarConexion();
   actualizarChip();
 });
-window.addEventListener('online',  () => { est.online = true;  actualizarSeñal(); });
-window.addEventListener('offline', () => { est.online = false; actualizarSeñal(); });
 
-// ── SEÑAL ──
-function actualizarSeñal() {
-  const on = navigator.onLine;
-  est.online = on;
+// ── CONEXIÓN: verificación real, no solo navigator.onLine ──
+async function verificarConexion() {
+  let online = false;
+  try {
+    const r = await fetch(SUPABASE_URL + '/rest/v1/', {
+      method: 'HEAD',
+      headers: { 'apikey': SUPABASE_KEY },
+      signal: AbortSignal.timeout(4000)
+    });
+    online = r.ok || r.status === 400;
+  } catch(e) {
+    online = false;
+  }
+  actualizarBadges(online);
+  return online;
+}
+
+function actualizarBadges(online) {
   ['inicio','form'].forEach(s => {
     const b = document.getElementById('badge-'+s);
     const t = document.getElementById('txt-señal-'+s);
     if (!b) return;
-    b.className = 'badge-señal ' + (on ? 'online' : 'offline');
-    t.textContent = on ? 'Con señal' : 'Sin señal';
+    b.className = 'badge-señal ' + (online ? 'online' : 'offline');
+    t.textContent = online ? 'Con señal' : 'Sin señal';
   });
 }
+
+window.addEventListener('online',  () => verificarConexion());
+window.addEventListener('offline', () => actualizarBadges(false));
 
 // ── PANTALLAS ──
 function mostrar(id) {
@@ -582,6 +289,7 @@ function iniciarRecorrido() {
   const d = new Date(fecha + 'T12:00:00');
   document.getElementById('cab-fecha').textContent = d.toLocaleDateString('es-CR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   actualizarProgreso();
+  verificarConexion();
 }
 
 // ── FORMULARIO ──
@@ -603,10 +311,11 @@ function renderFormulario() {
       </div>
       <div class="audio-aviso" id="aviso-${c.id}">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="var(--amber)" style="flex-shrink:0"><path d="M12 3L1 21h22L12 3zm0 3.5L19.5 19H4.5L12 6.5zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/></svg>
-        Audio guardado localmente — sin señal al grabar. Transcriba al recuperar señal.
+        Audio guardado — sin señal al grabar. Transcriba cuando recupere conexión.
       </div>
     </div>
-  `).join('') + `<button class="btn-primario" onclick="finalizarRecorrido()" style="margin-top:0.5rem;">
+  `).join('') + `
+  <button class="btn-primario" onclick="finalizarRecorrido()" style="margin-top:0.5rem;">
     <svg viewBox="0 0 24 24" class="icono"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
     Finalizar recorrido
   </button>`;
@@ -615,7 +324,7 @@ function renderFormulario() {
 function guardarResp(id) {
   est.respuestas[id] = document.getElementById('txt-'+id).value;
   const card = document.getElementById('card-'+id);
-  if (est.respuestas[id].trim()) card.classList.add('completo');
+  if ((est.respuestas[id]||'').trim()) card.classList.add('completo');
   else card.classList.remove('completo');
   actualizarProgreso();
 }
@@ -629,13 +338,14 @@ function actualizarProgreso() {
   document.getElementById('prog-fill').style.width = pct + '%';
 }
 
-// ── GRABACIÓN ──
+// ── GRABACIÓN: intenta speech primero, cae a audio si falla ──
 function toggleGrabar(id) {
   grabando[id] ? detenerGrabacion(id) : iniciarGrabacion(id);
 }
 
 function iniciarGrabacion(id) {
-  if (est.online && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+  const tieneSpeech = ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+  if (tieneSpeech) {
     iniciarSpeech(id);
   } else {
     grabarAudio(id);
@@ -648,7 +358,7 @@ function iniciarSpeech(id) {
   rec.lang = 'es-CR'; rec.continuous = true; rec.interimResults = true;
   speechRecs[id] = rec; grabando[id] = true;
   setBtnGrabando(id, true);
-  setVozEstado(id, 'grabando', '🎙 Transcribiendo en tiempo real...');
+  setVozEstado(id, 'grabando', '🎙 Escuchando...');
 
   rec.onresult = e => {
     let txt = '';
@@ -656,10 +366,19 @@ function iniciarSpeech(id) {
     document.getElementById('txt-'+id).value = txt.trim();
     guardarResp(id);
   };
+
   rec.onerror = e => {
     detenerGrabacion(id);
-    if (e.error === 'network') grabarAudio(id);
+    if (e.error === 'network' || e.error === 'service-not-allowed') {
+      toast('Sin señal para transcribir — grabando audio', '');
+      grabarAudio(id);
+    } else if (e.error === 'not-allowed') {
+      toast('Permiso de micrófono denegado', 'rojo');
+    } else {
+      grabarAudio(id);
+    }
   };
+
   rec.onend = () => { if (grabando[id]) { try { rec.start(); } catch(e){} } };
   rec.start();
 }
@@ -670,7 +389,7 @@ function grabarAudio(id) {
     const mr = new MediaRecorder(stream);
     mediaRecs[id] = mr; audioChunks[id] = [];
     setBtnGrabando(id, true);
-    setVozEstado(id, 'audio', '⚠ Sin señal — grabando audio...');
+    setVozEstado(id, 'audio', '⚠ Grabando audio (sin señal)...');
     mr.ondataavailable = e => { if(e.data.size>0) audioChunks[id].push(e.data); };
     mr.onstop = () => {
       const blob = new Blob(audioChunks[id], {type:'audio/webm'});
@@ -681,7 +400,7 @@ function grabarAudio(id) {
       actualizarProgreso();
     };
     mr.start();
-  }).catch(() => toast('No se pudo acceder al micrófono', 'rojo'));
+  }).catch(() => toast('No se pudo acceder al micrófono. Verifique permisos en Chrome.', 'rojo'));
 }
 
 function detenerGrabacion(id) {
@@ -690,7 +409,7 @@ function detenerGrabacion(id) {
   if (speechRecs[id]) {
     try { speechRecs[id].stop(); } catch(e){}
     speechRecs[id] = null;
-    setVozEstado(id, 'ok', '✓ Transcripción completada');
+    setVozEstado(id, 'ok', '✓ Transcripción guardada');
   }
   if (mediaRecs[id] && mediaRecs[id].state !== 'inactive') {
     mediaRecs[id].stop(); mediaRecs[id] = null;
@@ -698,10 +417,8 @@ function detenerGrabacion(id) {
 }
 
 function setBtnGrabando(id, on) {
-  const btn = document.getElementById('btn-'+id);
-  const lbl = document.getElementById('btn-lbl-'+id);
-  btn.classList.toggle('grabando', on);
-  lbl.textContent = on ? 'Detener' : 'Grabar';
+  document.getElementById('btn-'+id).classList.toggle('grabando', on);
+  document.getElementById('btn-lbl-'+id).textContent = on ? 'Detener' : 'Grabar';
 }
 
 function setVozEstado(id, cls, txt) {
@@ -714,8 +431,8 @@ function setVozEstado(id, cls, txt) {
 async function finalizarRecorrido() {
   const sinNada = CAMPOS.filter(c => !(est.respuestas[c.id]||'').trim() && !est.audios[c.id]);
   if (sinNada.length > 0) {
-    const nombres = sinNada.map(c=>c.nombre).join(', ');
-    if (!confirm(`Faltan ${sinNada.length} campo(s):\n${nombres}\n\n¿Guardar de todos modos?`)) return;
+    const nombres = sinNada.map(c=>c.nombre).join('\n• ');
+    if (!confirm(`Faltan ${sinNada.length} campo(s) sin completar:\n\n• ${nombres}\n\n¿Guardar el reporte de todos modos?`)) return;
   }
   mostrar('p-resumen');
   const d = new Date(est.fecha+'T12:00:00');
@@ -741,7 +458,7 @@ function renderResumen() {
 
 async function enviarASupabase() {
   const el = document.getElementById('estado-envio');
-  el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:8px;"><div class="spinner" style="border-color:rgba(0,0,0,0.15);border-top-color:var(--verde);"></div> Enviando a la base de datos...</div>';
+  el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:10px;"><span class="spinner"></span> Enviando a la base de datos...</div>';
   const payload = {
     finca:             est.finca,
     vaquero:           est.vaquero,
@@ -774,17 +491,15 @@ async function enviarASupabase() {
       throw new Error(err);
     }
   } catch(e) {
-    el.innerHTML = '⚠️ Sin conexión — el reporte se guardó localmente en este dispositivo. Se enviará la próxima vez que haya señal.';
+    el.innerHTML = '⚠️ Sin conexión — reporte guardado localmente. Se enviará cuando haya señal.';
     toast('Guardado localmente', '');
   }
 }
 
-// ── LOCAL ──
 function guardarLocal() {
   const lista = JSON.parse(localStorage.getItem('reportes_finca')||'[]');
   lista.push({
-    id: Date.now(),
-    finca: est.finca, vaquero: est.vaquero, fecha: est.fecha,
+    id: Date.now(), finca: est.finca, vaquero: est.vaquero, fecha: est.fecha,
     respuestas: {...est.respuestas},
     tieneAudios: Object.keys(est.audios).length > 0,
     ts: new Date().toISOString()
@@ -799,7 +514,6 @@ function actualizarChip() {
   else chip.style.display='none';
 }
 
-// ── EXPORTAR CSV ──
 function exportarCSV() {
   const lista = JSON.parse(localStorage.getItem('reportes_finca')||'[]');
   const todos = lista.length > 0 ? lista : [{finca:est.finca,vaquero:est.vaquero,fecha:est.fecha,respuestas:est.respuestas}];
@@ -815,11 +529,10 @@ function exportarCSV() {
   a.click();
 }
 
-// ── HISTORIAL ──
 function verHistorial() {
   const lista = JSON.parse(localStorage.getItem('reportes_finca')||'[]');
   if (!lista.length) { toast('No hay reportes guardados aún',''); return; }
-  const txt = lista.map((r,i)=>{
+  const txt = lista.map((r,i) => {
     const d = new Date(r.fecha+'T12:00:00');
     return `${i+1}. ${r.vaquero} — ${r.finca}\n   ${d.toLocaleDateString('es-CR',{day:'numeric',month:'short',year:'numeric'})}${r.tieneAudios?' 🎙':''}`;
   }).join('\n\n');
@@ -827,7 +540,7 @@ function verHistorial() {
 }
 
 function confirmarVolver() {
-  if (confirm('¿Salir del formulario? Se perderá el progreso.')) mostrar('p-inicio');
+  if (confirm('¿Salir del formulario? Se perderá el progreso no guardado.')) mostrar('p-inicio');
 }
 
 function nuevoRecorrido() {
@@ -835,7 +548,6 @@ function nuevoRecorrido() {
   document.getElementById('inp-fecha').value = new Date().toISOString().split('T')[0];
 }
 
-// ── TOAST ──
 let toastTimer;
 function toast(msg, tipo) {
   const el = document.getElementById('toast');
