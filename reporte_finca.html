@@ -52,6 +52,29 @@ body { font-family: 'DM Sans', sans-serif; background: var(--gris); color: var(-
 .cuerpo { padding: 1.25rem; }
 .card { background:var(--blanco); border-radius:var(--radio); border:0.5px solid var(--borde); padding:1.1rem 1.25rem; margin-bottom:1rem; }
 
+/* SELECTOR DE FINCA */
+.fincas-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:4px; }
+.finca-btn {
+  padding: 14px 10px;
+  border-radius: var(--radio-sm);
+  border: 1.5px solid var(--borde-med);
+  background: var(--gris);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--texto);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  line-height: 1.3;
+}
+.finca-btn:active { transform: scale(0.97); }
+.finca-btn.seleccionada {
+  background: var(--verde-light);
+  border-color: var(--verde);
+  color: var(--verde-dark);
+}
+
 select, input[type=date], input[type=text] { width:100%; padding:12px 14px; border:0.5px solid var(--borde-med); border-radius:var(--radio-sm); font-size:15px; font-family:'DM Sans',sans-serif; color:var(--texto); background:var(--gris); appearance:none; -webkit-appearance:none; }
 select:focus, input:focus { outline:2px solid var(--verde); outline-offset:-1px; }
 .label-campo { font-size:13px; font-weight:500; color:var(--texto-sec); margin-bottom:6px; display:block; }
@@ -104,7 +127,10 @@ textarea:focus { outline:2px solid var(--verde); outline-offset:-1px; }
 .resumen-audio { display:inline-flex; align-items:center; gap:5px; font-size:12px; padding:3px 9px; border-radius:20px; background:var(--amber-light); color:var(--amber); }
 .resumen-vacio { font-size:13px; color:#bbb; font-style:italic; }
 
-.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1a1a1a; color:white; padding:12px 20px; border-radius:24px; font-size:13px; font-weight:500; white-space:nowrap; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); z-index:9999; }
+/* BADGE IOS/ANDROID */
+.badge-dispositivo { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:20px; font-size:11px; font-weight:500; background:rgba(255,255,255,0.15); color:rgba(255,255,255,0.8); margin-top:6px; }
+
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1a1a1a; color:white; padding:12px 20px; border-radius:24px; font-size:13px; font-weight:500; white-space:nowrap; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); z-index:9999; max-width:90vw; text-align:center; }
 .toast.visible { transform:translateX(-50%) translateY(0); }
 .toast.verde { background:var(--verde-dark); }
 .toast.rojo { background:var(--rojo); }
@@ -124,6 +150,7 @@ svg.icono { width:18px; height:18px; fill:currentColor; }
         <div class="cab-etiqueta">Sistema de campo</div>
         <div class="cab-titulo">Reporte<br>de Finca</div>
         <div class="cab-sub">Seguimiento diario de vaqueros</div>
+        <div class="badge-dispositivo" id="badge-dispositivo">📱 Cargando...</div>
       </div>
       <div id="badge-inicio" class="badge-señal online">
         <span class="punto"></span>
@@ -134,11 +161,11 @@ svg.icono { width:18px; height:18px; fill:currentColor; }
   <div class="cuerpo">
     <div class="card">
       <div class="campo-grupo">
-        <label class="label-campo">Nombre de la finca</label>
-        <input type="text" id="inp-finca" placeholder="Ej: Finca La Esperanza">
+        <label class="label-campo">Selecciona la finca</label>
+        <div class="fincas-grid" id="fincas-grid"></div>
       </div>
       <div class="campo-grupo">
-        <label class="label-campo">Vaquero que realiza el recorrido</label>
+        <label class="label-campo">Tu nombre</label>
         <input type="text" id="inp-vaquero" placeholder="Ej: Carlos Méndez">
       </div>
       <div class="campo-grupo">
@@ -217,6 +244,8 @@ svg.icono { width:18px; height:18px; fill:currentColor; }
 const SUPABASE_URL = 'https://oyhotpwtqoeqmxoelxlm.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95aG90cHd0cW9lcW14b2VseGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NzE4NDcsImV4cCI6MjA5NTA0Nzg0N30.WwkBoTVbUd8yUGYP-ZCNCybuEZYVXeI4YVMAeMkJ180';
 
+const FINCAS = ['La Florida', 'Montecarlo', 'Tesoro', 'Bajogrande', 'Pino'];
+
 const CAMPOS = [
   { id:'sector',            nombre:'Sector recorrido',                  pista:'¿Qué área o potrero recorrió hoy?' },
   { id:'reses',             nombre:'Conteo de reses',                   pista:'¿Cuántas reses vio y en qué condición general están?' },
@@ -230,13 +259,50 @@ const CAMPOS = [
 let est = { finca:'', vaquero:'', fecha:'', respuestas:{}, audios:{} };
 let mediaRecs = {}, audioChunks = {}, grabando = {}, speechRecs = {};
 
+// ── DETECCIÓN DE DISPOSITIVO ──
+function detectarDispositivo() {
+  const ua = navigator.userAgent;
+  const esIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const esAndroid = /Android/.test(ua);
+  const badge = document.getElementById('badge-dispositivo');
+  if (esIOS) badge.textContent = '🍎 iPhone / iPad';
+  else if (esAndroid) badge.textContent = '🤖 Android';
+  else badge.textContent = '💻 Navegador';
+  return { esIOS, esAndroid };
+}
+
+function esIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+// ── FINCAS GRID ──
+function renderFincas() {
+  const grid = document.getElementById('fincas-grid');
+  grid.innerHTML = FINCAS.map(f => `
+    <button class="finca-btn" onclick="seleccionarFinca('${f}', this)">${f}</button>
+  `).join('');
+}
+
+function seleccionarFinca(nombre, btn) {
+  document.querySelectorAll('.finca-btn').forEach(b => b.classList.remove('seleccionada'));
+  btn.classList.add('seleccionada');
+  est.finca = nombre;
+}
+
+// ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('inp-fecha').value = new Date().toISOString().split('T')[0];
+  detectarDispositivo();
+  renderFincas();
   verificarConexion();
   actualizarChip();
 });
 
-// ── CONEXIÓN: verificación real, no solo navigator.onLine ──
+window.addEventListener('online',  () => verificarConexion());
+window.addEventListener('offline', () => actualizarBadges(false));
+
+// ── CONEXIÓN REAL ──
 async function verificarConexion() {
   let online = false;
   try {
@@ -246,9 +312,7 @@ async function verificarConexion() {
       signal: AbortSignal.timeout(4000)
     });
     online = r.ok || r.status === 400;
-  } catch(e) {
-    online = false;
-  }
+  } catch(e) { online = false; }
   actualizarBadges(online);
   return online;
 }
@@ -263,9 +327,6 @@ function actualizarBadges(online) {
   });
 }
 
-window.addEventListener('online',  () => verificarConexion());
-window.addEventListener('offline', () => actualizarBadges(false));
-
 // ── PANTALLAS ──
 function mostrar(id) {
   document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activo'));
@@ -275,17 +336,16 @@ function mostrar(id) {
 
 // ── INICIO ──
 function iniciarRecorrido() {
-  const finca   = document.getElementById('inp-finca').value.trim();
   const vaquero = document.getElementById('inp-vaquero').value.trim();
   const fecha   = document.getElementById('inp-fecha').value;
-  if (!finca)   { toast('Ingrese el nombre de la finca', 'rojo'); return; }
-  if (!vaquero) { toast('Ingrese el nombre del vaquero', 'rojo'); return; }
-  if (!fecha)   { toast('Seleccione la fecha', 'rojo'); return; }
-  est.finca = finca; est.vaquero = vaquero; est.fecha = fecha;
+  if (!est.finca)  { toast('Selecciona una finca', 'rojo'); return; }
+  if (!vaquero)    { toast('Ingresa tu nombre', 'rojo'); return; }
+  if (!fecha)      { toast('Selecciona la fecha', 'rojo'); return; }
+  est.vaquero = vaquero; est.fecha = fecha;
   est.respuestas = {}; est.audios = {};
   renderFormulario();
   mostrar('p-formulario');
-  document.getElementById('cab-vaquero').textContent = vaquero + ' — ' + finca;
+  document.getElementById('cab-vaquero').textContent = vaquero + ' — ' + est.finca;
   const d = new Date(fecha + 'T12:00:00');
   document.getElementById('cab-fecha').textContent = d.toLocaleDateString('es-CR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   actualizarProgreso();
@@ -311,7 +371,7 @@ function renderFormulario() {
       </div>
       <div class="audio-aviso" id="aviso-${c.id}">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="var(--amber)" style="flex-shrink:0"><path d="M12 3L1 21h22L12 3zm0 3.5L19.5 19H4.5L12 6.5zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/></svg>
-        Audio guardado — sin señal al grabar. Transcriba cuando recupere conexión.
+        Audio guardado — sin señal al grabar.
       </div>
     </div>
   `).join('') + `
@@ -338,7 +398,7 @@ function actualizarProgreso() {
   document.getElementById('prog-fill').style.width = pct + '%';
 }
 
-// ── GRABACIÓN: intenta speech primero, cae a audio si falla ──
+// ── GRABACIÓN: Speech API primero, fallback a audio ──
 function toggleGrabar(id) {
   grabando[id] ? detenerGrabacion(id) : iniciarGrabacion(id);
 }
@@ -348,6 +408,7 @@ function iniciarGrabacion(id) {
   if (tieneSpeech) {
     iniciarSpeech(id);
   } else {
+    // iOS Safari sin Speech API — grabar audio directamente
     grabarAudio(id);
   }
 }
@@ -355,8 +416,11 @@ function iniciarGrabacion(id) {
 function iniciarSpeech(id) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const rec = new SR();
-  rec.lang = 'es-CR'; rec.continuous = true; rec.interimResults = true;
-  speechRecs[id] = rec; grabando[id] = true;
+  rec.lang = 'es-CR';
+  rec.continuous = true;
+  rec.interimResults = true;
+  speechRecs[id] = rec;
+  grabando[id] = true;
   setBtnGrabando(id, true);
   setVozEstado(id, 'grabando', '🎙 Escuchando...');
 
@@ -370,7 +434,7 @@ function iniciarSpeech(id) {
   rec.onerror = e => {
     detenerGrabacion(id);
     if (e.error === 'network' || e.error === 'service-not-allowed') {
-      toast('Sin señal para transcribir — grabando audio', '');
+      toast('Sin señal — guardando audio', '');
       grabarAudio(id);
     } else if (e.error === 'not-allowed') {
       toast('Permiso de micrófono denegado', 'rojo');
@@ -384,23 +448,49 @@ function iniciarSpeech(id) {
 }
 
 function grabarAudio(id) {
-  navigator.mediaDevices.getUserMedia({audio:true}).then(stream => {
+  // Configuración compatible con iOS Safari
+  const constraints = { audio: {
+    echoCancellation: true,
+    noiseSuppression: true,
+    sampleRate: 44100
+  }};
+
+  navigator.mediaDevices.getUserMedia(constraints).then(stream => {
     grabando[id] = true;
-    const mr = new MediaRecorder(stream);
-    mediaRecs[id] = mr; audioChunks[id] = [];
+
+    // iOS Safari solo soporta audio/mp4, Android soporta audio/webm
+    let mimeType = 'audio/webm';
+    if (esIOS()) {
+      mimeType = MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : 'audio/aac';
+    }
+
+    const options = mimeType ? { mimeType } : {};
+    let mr;
+    try {
+      mr = new MediaRecorder(stream, options);
+    } catch(e) {
+      mr = new MediaRecorder(stream);
+    }
+
+    mediaRecs[id] = mr;
+    audioChunks[id] = [];
     setBtnGrabando(id, true);
-    setVozEstado(id, 'audio', '⚠ Grabando audio (sin señal)...');
+    setVozEstado(id, 'audio', '⚠ Grabando audio...');
+
     mr.ondataavailable = e => { if(e.data.size>0) audioChunks[id].push(e.data); };
     mr.onstop = () => {
-      const blob = new Blob(audioChunks[id], {type:'audio/webm'});
+      const blob = new Blob(audioChunks[id], { type: mimeType || 'audio/webm' });
       est.audios[id] = URL.createObjectURL(blob);
-      stream.getTracks().forEach(t=>t.stop());
+      stream.getTracks().forEach(t => t.stop());
       document.getElementById('aviso-'+id).classList.add('visible');
       setVozEstado(id, 'audio', 'Audio guardado localmente');
       actualizarProgreso();
     };
-    mr.start();
-  }).catch(() => toast('No se pudo acceder al micrófono. Verifique permisos en Chrome.', 'rojo'));
+
+    mr.start(1000); // iOS necesita timeslice
+  }).catch(err => {
+    toast('No se pudo acceder al micrófono. Verifique permisos.', 'rojo');
+  });
 }
 
 function detenerGrabacion(id) {
@@ -412,7 +502,8 @@ function detenerGrabacion(id) {
     setVozEstado(id, 'ok', '✓ Transcripción guardada');
   }
   if (mediaRecs[id] && mediaRecs[id].state !== 'inactive') {
-    mediaRecs[id].stop(); mediaRecs[id] = null;
+    mediaRecs[id].stop();
+    mediaRecs[id] = null;
   }
 }
 
@@ -431,8 +522,8 @@ function setVozEstado(id, cls, txt) {
 async function finalizarRecorrido() {
   const sinNada = CAMPOS.filter(c => !(est.respuestas[c.id]||'').trim() && !est.audios[c.id]);
   if (sinNada.length > 0) {
-    const nombres = sinNada.map(c=>c.nombre).join('\n• ');
-    if (!confirm(`Faltan ${sinNada.length} campo(s) sin completar:\n\n• ${nombres}\n\n¿Guardar el reporte de todos modos?`)) return;
+    const nombres = sinNada.map(c => c.nombre).join('\n• ');
+    if (!confirm(`Faltan ${sinNada.length} campo(s):\n\n• ${nombres}\n\n¿Guardar de todos modos?`)) return;
   }
   mostrar('p-resumen');
   const d = new Date(est.fecha+'T12:00:00');
@@ -487,8 +578,7 @@ async function enviarASupabase() {
       el.innerHTML = '✅ Reporte enviado correctamente a la base de datos.';
       toast('Reporte guardado en la nube', 'verde');
     } else {
-      const err = await res.text();
-      throw new Error(err);
+      throw new Error(await res.text());
     }
   } catch(e) {
     el.innerHTML = '⚠️ Sin conexión — reporte guardado localmente. Se enviará cuando haya señal.';
@@ -544,6 +634,8 @@ function confirmarVolver() {
 }
 
 function nuevoRecorrido() {
+  est.finca = '';
+  document.querySelectorAll('.finca-btn').forEach(b => b.classList.remove('seleccionada'));
   mostrar('p-inicio');
   document.getElementById('inp-fecha').value = new Date().toISOString().split('T')[0];
 }
