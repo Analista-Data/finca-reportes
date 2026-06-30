@@ -5,7 +5,7 @@ import { PageLayout, PageHeader, PageBody, PageStats } from '../../components/la
 import { Card } from '../../components/ui/Card'
 import { ButtonPrimary, ButtonSecondary, ButtonNuevo, ButtonAccion } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
-import { Input, Select } from '../../components/ui/Input'
+import { Input, Select, FincasMultiSelector } from '../../components/ui/Input'
 import { FINCAS } from '../../styles/theme'
 import * as sh from '../../styles/shared'
 
@@ -35,12 +35,12 @@ export default function Usuarios() {
   const [passwordAdmin, setPasswordAdmin] = useState('')
 
   const [form, setForm] = useState({
-  nombre:'', cedula:'', correo_real:'', password:'', rol:'vaquero',
-  finca:'', telefono:''
+    nombre:'', cedula:'', alias:'', correo_real:'', password:'', rol:'vaquero',
+    fincas:[], telefono:''
   })
 
   const [formEdit, setFormEdit] = useState({
-    nombre:'', rol:'vaquero', finca:'', telefono:'', activo: true
+    nombre:'', rol:'vaquero', fincas:[], telefono:'', alias:'', activo: true
   })
 
   const {
@@ -49,34 +49,23 @@ export default function Usuarios() {
     actualizarPermiso, permisosDeRol
   } = useUsuarios()
 
-  function iniciarCreacion() {
-  if (!form.nombre.trim()) { setError('Ingresa el nombre'); return }
-  if (!form.cedula.trim()) { setError('Ingresa el número de cédula'); return }
-  if (!form.password || form.password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres'); return }
-  setError('')
-  setPidiendoPassword(true)
+  async function handleCrear() {
+    if (!form.nombre.trim()) { setError('Ingresa el nombre'); return }
+    if (!form.cedula.trim()) { setError('Ingresa el número de cédula'); return }
+    if (!form.password || form.password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres'); return }
+    setError('')
+    setGuardando(true)
+    const { error } = await crearUsuario(form.cedula, form.password, form)
+    setGuardando(false)
+    if (error) {
+      setError('Error al crear usuario: ' + error.message)
+    } else {
+      setExito('Usuario creado correctamente')
+      setForm({ nombre:'', cedula:'', correo_real:'', password:'', rol:'vaquero', finca:'', telefono:'' })
+      setTimeout(() => setExito(''), 3000)
+      setTab('lista')
+    }
   }
-
-  async function confirmarCreacion() {
-  if (!passwordAdmin) { setError('Ingresa tu contraseña de administrador'); return }
-  setError('')
-  setGuardando(true)
-  const { error } = await crearUsuario(form.cedula, form.password, form, {
-    email: perfil?.email,
-    password: passwordAdmin
-  })
-  setGuardando(false)
-  setPasswordAdmin('')
-  setPidiendoPassword(false)
-  if (error) {
-    setError('Error al crear usuario: ' + error.message)
-  } else {
-    setExito('Usuario creado correctamente')
-    setForm({ nombre:'', cedula:'', correo_real:'', password:'', rol:'vaquero', finca:'', telefono:'' })
-    setTimeout(() => setExito(''), 3000)
-    setTab('lista')
-  }
-}
 
   async function handleActualizar() {
     if (!formEdit.nombre.trim()) { setError('Ingresa el nombre'); return }
@@ -91,16 +80,17 @@ export default function Usuarios() {
   }
 
   function abrirEditar(u) {
-    setFormEdit({
-      nombre: u.nombre || '',
-      rol: u.rol || 'vaquero',
-      finca: u.finca || '',
-      telefono: u.telefono || '',
-      activo: u.activo !== false
-    })
-    setSeleccionado(u)
-    setVista('editar')
-  }
+  setFormEdit({
+    nombre: u.nombre || '',
+    rol: u.rol || 'vaquero',
+    fincas: u.fincas || [],
+    telefono: u.telefono || '',
+    alias: u.alias || '',
+    activo: u.activo !== false
+  })
+  setSeleccionado(u)
+  setVista('editar')
+}
 
   const rolColor = {
     admin: 'rojo', veterinario: 'verde',
@@ -133,21 +123,18 @@ export default function Usuarios() {
             onChange={e => setFormEdit(p => ({ ...p, nombre: e.target.value }))}
             placeholder="Nombre del usuario" />
 
+          <Input label="Alias / nombre de usuario (opcional)" value={formEdit.alias}
+            onChange={e => setFormEdit(p => ({ ...p, alias: e.target.value.toLowerCase().replace(/\s/g, '') }))}
+            placeholder="Ej: carlos, jefe_finca" />
+
           <Select label="Rol *" value={formEdit.rol}
             onChange={e => setFormEdit(p => ({ ...p, rol: e.target.value }))}>
             {ROLES.map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
           </Select>
 
           <div style={{ marginBottom:'12px' }}>
-            <div style={sh.grupoLabel}>Finca asignada</div>
-            <div style={sh.fincasGrid}>
-              {['', ...FINCAS].map(f => (
-                <button key={f} onClick={() => setFormEdit(p => ({ ...p, finca: f }))}
-                  style={{ ...sh.fincaChip, ...(formEdit.finca === f ? sh.fincaChipOn : {}) }}>
-                  {f || 'Todas'}
-                </button>
-              ))}
-            </div>
+            <FincasMultiSelector value={formEdit.fincas}
+              onChange={fincas => setFormEdit(p => ({ ...p, fincas }))} />
           </div>
 
           <Input label="Teléfono" value={formEdit.telefono}
@@ -224,7 +211,11 @@ export default function Usuarios() {
                   <div>
                     <div style={{ fontSize:'15px', fontWeight:'500', color:'var(--texto)', marginBottom:'2px' }}>{u.nombre}</div>
                     <div style={{ fontSize:'12px', color:'var(--texto-sec)' }}>{u.cedula ? `Cédula: ${u.cedula}` : u.email}</div>
-                    {u.finca && <div style={{ fontSize:'12px', color:'var(--texto-sec)', marginTop:'1px' }}>📍 {u.finca}</div>}
+                    {u.fincas && u.fincas.length > 0 && (
+                    <div style={{ fontSize:'12px', color:'var(--texto-sec)', marginTop:'1px' }}>
+                      📍 {u.fincas.join(', ')}
+                    </div>
+                  )}
                     {u.telefono && <div style={{ fontSize:'12px', color:'var(--texto-sec)', marginTop:'1px' }}>📱 {u.telefono}</div>}
                   </div>
                 </div>
@@ -259,6 +250,10 @@ export default function Usuarios() {
               onChange={e => setForm(p => ({ ...p, cedula: e.target.value }))}
               placeholder="Ej: 112345678" />
 
+            <Input label="Alias / nombre de usuario (opcional)" value={form.alias}
+              onChange={e => setForm(p => ({ ...p, alias: e.target.value.toLowerCase().replace(/\s/g, '') }))}
+              placeholder="Ej: carlos, jefe_finca" />
+
             <Input label="Correo electrónico (opcional)" type="email" value={form.correo_real}
               onChange={e => setForm(p => ({ ...p, correo_real: e.target.value }))}
               placeholder="Para notificaciones, opcional" />
@@ -273,15 +268,8 @@ export default function Usuarios() {
             </Select>
 
             <div style={{ marginBottom:'12px' }}>
-              <div style={sh.grupoLabel}>Finca asignada (opcional)</div>
-              <div style={sh.fincasGrid}>
-                {['', ...FINCAS].map(f => (
-                  <button key={f} onClick={() => setForm(p => ({ ...p, finca: f }))}
-                    style={{ ...sh.fincaChip, ...(form.finca === f ? sh.fincaChipOn : {}) }}>
-                    {f || 'Todas'}
-                  </button>
-                ))}
-              </div>
+              <FincasMultiSelector value={form.fincas}
+                onChange={fincas => setForm(p => ({ ...p, fincas }))} />
             </div>
 
             <Input label="Teléfono (opcional)" value={form.telefono}
@@ -292,10 +280,10 @@ export default function Usuarios() {
             {exito && <div style={{ padding:'10px 14px', background:'var(--verde-light)', color:'var(--verde-dark)', borderRadius:'8px', fontSize:'13px', marginBottom:'10px' }}>✅ {exito}</div>}
 
             <div style={{ marginTop:'4px', display:'flex', flexDirection:'column', gap:'8px' }}>
-              <ButtonPrimary onClick={iniciarCreacion} disabled={guardando}>
+              <ButtonPrimary onClick={handleCrear} disabled={guardando}>
                 {guardando ? 'Creando usuario...' : 'Crear usuario'}
               </ButtonPrimary>
-              <ButtonSecondary onClick={() => { setForm({ nombre:'', cedula:'', correo_real:'', password:'', rol:'vaquero', finca:'', telefono:'' }); setError(''); setTab('lista') }}>
+              <ButtonSecondary onClick={() => { setForm({ nombre:'', cedula:'',alias:'',correo_real:'', password:'', rol:'vaquero', finca:[], telefono:'' }); setError(''); setTab('lista') }}>
                 Cancelar
               </ButtonSecondary>
             </div>
@@ -365,34 +353,6 @@ export default function Usuarios() {
         )}
 
       </PageBody>
-
-      {/* MODAL CONFIRMAR CONTRASEÑA ADMIN */}
-      {pidiendoPassword && (
-        <div style={{
-          position:'fixed', inset:0, background:'rgba(0,0,0,0.5)',
-          display:'flex', alignItems:'center', justifyContent:'center',
-          zIndex:500, padding:'1.5rem'
-        }}>
-          <div style={{ background:'white', borderRadius:'16px', padding:'1.5rem', width:'100%', maxWidth:'380px' }}>
-            <div style={{ fontSize:'16px', fontWeight:'600', color:'var(--texto)', marginBottom:'8px' }}>
-              Confirma tu identidad
-            </div>
-            <div style={{ fontSize:'13px', color:'var(--texto-sec)', marginBottom:'1rem', lineHeight:1.4 }}>
-              Para crear este usuario necesitamos verificar tu contraseña de administrador. Esto evita que pierdas tu sesión actual.
-            </div>
-            <Input label="Tu contraseña de administrador" type="password"
-              value={passwordAdmin} onChange={e => setPasswordAdmin(e.target.value)}
-              placeholder="••••••••" />
-            {error && <div style={{ padding:'10px 14px', background:'var(--rojo-light)', color:'var(--rojo)', borderRadius:'8px', fontSize:'13px', marginBottom:'10px' }}>{error}</div>}
-            <ButtonPrimary onClick={confirmarCreacion} disabled={guardando}>
-              {guardando ? 'Creando...' : 'Confirmar y crear usuario'}
-            </ButtonPrimary>
-            <ButtonSecondary onClick={() => { setPidiendoPassword(false); setPasswordAdmin(''); setError('') }}>
-              Cancelar
-            </ButtonSecondary>
-          </div>
-        </div>
-      )}
-    </PageLayout>
+      </PageLayout>
   )
 }

@@ -64,3 +64,34 @@ export function FincaSelector({ value, onChange }) {
     </div>
   )
 }
+
+export function FincasMultiSelector({ value = [], onChange }) {
+  const FINCAS = ['La Florida', 'Montecarlo', 'Tesoro', 'Bajogrande', 'Pino']
+
+  function toggle(finca) {
+    if (value.includes(finca)) {
+      onChange(value.filter(f => f !== finca))
+    } else {
+      onChange([...value, finca])
+    }
+  }
+
+  return (
+    <div>
+      <div style={sh.grupoLabel}>Fincas asignadas (puede seleccionar varias)</div>
+      <div style={sh.fincasGrid}>
+        {FINCAS.map(f => (
+          <button key={f} onClick={() => toggle(f)}
+            style={{ ...sh.fincaChip, ...(value.includes(f) ? sh.fincaChipOn : {}) }}>
+            {value.includes(f) ? '✓ ' : ''}{f}
+          </button>
+        ))}
+      </div>
+      {value.length === 0 && (
+        <div style={{ fontSize:'12px', color:'var(--texto-sec)', marginTop:'6px' }}>
+          Sin selección = acceso a todas las fincas
+        </div>
+      )}
+    </div>
+  )
+}

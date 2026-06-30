@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { supabase } from '../../lib/supabase'
 import { colors } from '../../styles/theme'
 
 export default function Login() {
-  const [cedula, setCedula] = useState('')
+  const [identificador, setIdentificador] = useState('')
   const [password, setPassword] = useState('')
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState('')
@@ -16,10 +17,25 @@ export default function Login() {
     setCargando(true)
     setError('')
 
-    const emailTecnico = `bajogrande.${cedula.trim()}@gmail.com`
+    const valor = identificador.trim()
+
+    // Buscar si el valor ingresado coincide con una cédula o un alias
+    const { data: perfil } = await supabase
+      .from('perfiles')
+      .select('cedula, alias')
+      .or(`cedula.eq.${valor},alias.eq.${valor}`)
+      .maybeSingle()
+
+    let cedulaReal = valor
+    if (perfil) {
+      cedulaReal = perfil.cedula
+    }
+
+    const emailTecnico = `bajogrande.${cedulaReal}@gmail.com`
     const { error } = await login(emailTecnico, password)
+
     if (error) {
-      setError('Cédula o contraseña incorrectos')
+      setError('Usuario o contraseña incorrectos')
       setCargando(false)
       return
     }
@@ -40,12 +56,12 @@ export default function Login() {
 
         <form onSubmit={handleLogin}>
           <div style={s.grupo}>
-            <label style={s.label}>Número de cédula</label>
+            <label style={s.label}>Cédula o nombre de usuario</label>
             <input
               type="text"
-              value={cedula}
-              onChange={e => setCedula(e.target.value)}
-              placeholder="Ej: 112345678"
+              value={identificador}
+              onChange={e => setIdentificador(e.target.value)}
+              placeholder="Ej: 112345678 o carlos"
               style={s.input}
               required
             />
